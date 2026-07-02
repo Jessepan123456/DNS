@@ -38,7 +38,7 @@ impl BytePacketBuffer {
     /// Read a single byte and move the position one step forward
     pub fn read(&mut self) -> Result<u8, &str> {
         if self.pos >= 512 {
-            return Err("End of buffer1".into());
+            return Err("End of buffer(read)".into());
         }
         let res = self.buf[self.pos];
         self.pos += 1;
@@ -49,7 +49,7 @@ impl BytePacketBuffer {
     /// Get a single byte, without changing the position
     pub fn get(&mut self, pos: usize) -> Result<u8, &str> {
         if pos >= 512 {
-            return Err("End of buffer2".into());
+            return Err("End of buffer(get)".into());
         }
         Ok(self.buf[pos])
     }
@@ -57,7 +57,7 @@ impl BytePacketBuffer {
     /// Get a Range of bytes
     pub fn get_range(&mut self, start: usize, len: usize) -> Result<&[u8], &str> {
         if start + len >= 512 {
-            return Err("End of buffer3".into());
+            return Err("End of buffer(get_range)".into());
         }
         Ok(&self.buf[start..start + len as usize])
     }
@@ -157,7 +157,7 @@ impl BytePacketBuffer {
     /// Write function
     pub fn write(&mut self, val: u8) -> Result<(), String> {
         if self.pos >= 512 {
-            return Err("End of buffer".into());
+            return Err("End of buffer(write)".into());
         }
         self.buf[self.pos] = val;
         self.pos += 1;
@@ -188,7 +188,7 @@ impl BytePacketBuffer {
 
         Ok(())
     }
-    
+
     /// Write qname
     /// write domains
     /// Example: www.google.com into [3]www[6]google[3]com[0]
@@ -196,7 +196,7 @@ impl BytePacketBuffer {
         for label in qname.split(".") {
             let len = label.len();
             if len > 0x3f {
-                return Err("Single label exceeds 63 chars of length".into())
+                return Err("Single label exceeds 63 chars of length".into());
             }
 
             self.write_u8(len as u8)?;

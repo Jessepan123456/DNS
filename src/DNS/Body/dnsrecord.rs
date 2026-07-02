@@ -1,6 +1,5 @@
 //DNS records
-use crate::DNS::Body::querytype::QueryType;
-use crate::DNS::packetbuffer::BytePacketBuffer;
+use crate::DNS::{Body::querytype::QueryType, packetbuffer::BytePacketBuffer};
 use std::net::{Ipv4Addr, Ipv6Addr};
 
 //Dns Record Struct
