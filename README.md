@@ -22,3 +22,5 @@ https://github.com/EmilHernvall/dnsguide.git
 - Better packet printing
 - Error Checking
 - Command line interface
+- Configurable DNS server
+- Packet validation
