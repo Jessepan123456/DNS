@@ -52,6 +52,10 @@ impl DnsHeader {
 
     ///Reads the created DnsHeader by reading the bits in it
     pub fn read(&mut self, buffer: &mut BytePacketBuffer) -> Result<(), String> {
+        if !self.opcode <= 5 {
+            return Err("Opcode too large, only support the standard 1, 2, 3 Opcode".into());
+        }
+        
         self.id = buffer.read_u16()?;
 
         let flags = buffer.read_u16()?;

@@ -1,25 +1,23 @@
 use crate::DNS::{
     Body::{
         dnsquestion::DnsQuestion,
-        dnsrecord::DnsRecord,
         querytype::QueryType::{self},
     },
     dnspacket::DnsPacket,
+    helper::user_input,
     packetbuffer::BytePacketBuffer,
 };
 use std::{error::Error, io, net::UdpSocket};
 
+#[allow(non_snake_case)]
 mod DNS;
 
 fn main() -> Result<(), Box<dyn Error>> {
     //qname user input
-    println!("Enter a url: ");
-    let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Failed to get input");
+    println!("Enter a url, type, DNS server, and port(Put space between them): ");
 
-    let mut parts = input.split_whitespace();
+    let binding = DNS::helper::user_input();
+    let mut parts = binding.split_whitespace();
 
     // Perform an A query for google.com
     let qname = parts.next().expect("Failed to get name");
@@ -31,9 +29,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         "AAAA" => QueryType::AAAA,
         _ => QueryType::UNKNOWN(0),
     };
+    let server_info = parts.next().expect("Failed to get DNS server");
+    let port: u16 = parts
+        .next()
+        .expect("Failed to get port")
+        .parse()
+        .expect("Failed to parse");
 
     // Using googles public DNS server
-    let server = ("8.8.8.8", 53);
+    let server = (server_info, port);
 
     // Bind a UDP socket to an arbitrary port
     let socket = UdpSocket::bind(("0.0.0.0", 43210))?;
@@ -61,118 +65,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let res_packet = DnsPacket::from_buffer(&mut res_buffer)?;
 
-    match choice().trim() {
+    match DNS::helper::choice().trim() {
         "1" => {
-            choice_1(res_packet);
+            DNS::helper::choice_1(res_packet);
         }
         "2" => {
-            choice_2(res_packet);
+            DNS::helper::choice_2(res_packet);
         }
         _ => {}
     }
     Ok(())
-}
-
-fn print(rec: DnsRecord) {
-    match rec {
-        DnsRecord::A { domain, addr, ttl } => {
-            println!("{} -> {} (TTL: {})", domain, addr, ttl)
-        }
-        DnsRecord::NS { domain, host, ttl } => {
-            println!("{} -> {} (TTL: {})", domain, host, ttl)
-        }
-        DnsRecord::CNAME { domain, host, ttl } => {
-            println!("{} -> {} (TTL: {})", domain, host, ttl)
-        }
-        DnsRecord::MX {
-            domain,
-            priority,
-            host,
-            ttl,
-        } => {
-            println!("{} -> {} {} (TTL: {})", domain, host, priority, ttl)
-        }
-        DnsRecord::AAAA { domain, addr, ttl } => {
-            println!("{} -> {} (TTL: {})", domain, addr, ttl)
-        }
-        DnsRecord::UNKNOWN {
-            domain,
-            qtype,
-            data_len,
-            ttl,
-        } => {
-            println!("{} {}, (length: {}, TTL {})", domain, qtype, data_len, ttl)
-        }
-    }
-}
-
-fn choice() -> String {
-    println!("1 for debug, 2 for normal");
-    let mut debug = String::new();
-    io::stdin()
-        .read_line(&mut debug)
-        .expect("Failed to get user input");
-    return debug;
-}
-
-fn choice_1(res_packet: DnsPacket) {
-    // Parse the packet and print the response
-    println!("{:#?}", res_packet.header);
-
-    for q in res_packet.questions {
-        println!("{:#?}", q);
-    }
-
-    for rec in res_packet.answers {
-        println!("{:#?}", rec);
-    }
-
-    for rec in res_packet.authorities {
-        println!("{:#?}", rec);
-    }
-
-    for rec in res_packet.resources {
-        println!("{:#?}", rec);
-    }
-}
-
-fn choice_2(res_packet: DnsPacket) {
-    println!(
-        "Header:
-        ID: {}
-        Response: {}
-        Recursion Available: {}
-        Questions: {}
-        Answers: {}
-        Authorities: {}
-        ",
-        res_packet.header.id,
-        res_packet.header.response,
-        res_packet.header.recursion_avaiable,
-        res_packet.header.questions,
-        res_packet.header.answers,
-        res_packet.header.authoritative_entries,
-    );
-
-    println!("Questions:");
-    for q in res_packet.questions {
-        println!("-{} {:?}", q.name, q.qtype);
-    }
-
-    println!("Answers:");
-    for rec in res_packet.answers {
-        print(rec);
-    }
-    if !res_packet.authorities.is_empty() {
-        println!("Authorities:");
-        for rec in res_packet.authorities {
-            print(rec);
-        }
-    }
-    if !res_packet.resources.is_empty() {
-        println!("Additionals:");
-        for rec in res_packet.resources {
-            print(rec);
-        }
-    }
 }

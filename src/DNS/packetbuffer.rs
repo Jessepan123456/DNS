@@ -212,6 +212,9 @@ impl BytePacketBuffer {
     }
 
     pub fn set(&mut self, pos: usize, val: u8) -> Result<(), String> {
+        if self.buf.len() <= pos {
+            return Err("Set out of bound".into());
+        }
         self.buf[pos] = val;
 
         Ok(())

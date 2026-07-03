@@ -32,6 +32,10 @@ impl DnsPacket {
         let mut result = DnsPacket::new();
         result.header.read(buffer)?;
 
+        if result.header.questions > 100 || result.header.answers > 1000 {
+            return Err("DNS Packet Questions/Answers is too large".into());
+        }
+
         for _ in 0..result.header.questions {
             let mut question = DnsQuestion::new("".to_string(), QueryType::UNKNOWN(0));
             question.read(buffer)?;

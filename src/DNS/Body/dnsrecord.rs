@@ -56,6 +56,9 @@ impl DnsRecord {
 
         match qtype {
             QueryType::A => {
+                if data_len != 4 {
+                    return Err("Invalid bytes size for QueryType A".into());
+                }
                 let raw_addr = buffer.read_u32()?;
                 let addr = Ipv4Addr::new(
                     ((raw_addr >> 24) & 0xFF) as u8,
@@ -72,6 +75,9 @@ impl DnsRecord {
             }
             //Four times the A type for raw addr
             QueryType::AAAA => {
+                if data_len != 16 {
+                    return Err("Invalid bytes size for QueryType AAAA".into());
+                }
                 let raw_addr1 = buffer.read_u32()?;
                 let raw_addr2 = buffer.read_u32()?;
                 let raw_addr3 = buffer.read_u32()?;
