@@ -7,7 +7,7 @@ use crate::DNS::{
     helper::user_input,
     packetbuffer::BytePacketBuffer,
 };
-use std::{error::Error, io, net::UdpSocket};
+use std::{error::Error, net::UdpSocket};
 
 #[allow(non_snake_case)]
 mod DNS;
@@ -16,26 +16,42 @@ fn main() -> Result<(), Box<dyn Error>> {
     //qname user input
     println!("Enter a url, type, DNS server, and port(Put space between them): ");
 
-    let binding = DNS::helper::user_input();
-    let mut parts = binding.split_whitespace();
+    let binding = user_input();
+    //Default Settings
+    let mut qname = "google.com";
+    let mut qtype = QueryType::A;
+    let mut server_info = "8.8.8.8";
+    let mut port = 53;
+    if !binding.is_empty() {
+        let mut parts = binding.split_whitespace();
 
-    // Perform an A query for google.com
-    let qname = parts.next().expect("Failed to get name");
-    let qtype = match parts.next().expect("Failed to get type") {
-        "A" => QueryType::A,
-        "NS" => QueryType::NS,
-        "CNAME" => QueryType::CNAME,
-        "MX" => QueryType::MX,
-        "AAAA" => QueryType::AAAA,
-        _ => QueryType::UNKNOWN(0),
-    };
-    let server_info = parts.next().expect("Failed to get DNS server");
-    let port: u16 = parts
-        .next()
-        .expect("Failed to get port")
-        .parse()
-        .expect("Failed to parse");
+        // Perform an A query for google.com
+        qname = parts.next().expect("Failed to get name");
 
+        qtype = match parts.next().expect("Failed to get type") {
+            "A" => QueryType::A,
+            "NS" => QueryType::NS,
+            "CNAME" => QueryType::CNAME,
+            "MX" => QueryType::MX,
+            "TXT" => QueryType::TXT,
+            "AAAA" => QueryType::AAAA,
+            _ => QueryType::UNKNOWN(0),
+        };
+        server_info = match parts.next() {
+            Some(i) => i,
+            None => {
+                println!("Please provide a server");
+                return Ok(());
+            }
+        };
+        port = match parts.next() {
+            Some(p) => p.parse().expect("Failed to parse"),
+            None => {
+                println!("Please provide a port");
+                return Ok(());
+            }
+        }
+    }
     // Using googles public DNS server
     let server = (server_info, port);
 

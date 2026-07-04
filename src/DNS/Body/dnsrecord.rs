@@ -35,6 +35,11 @@ pub enum DnsRecord {
         host: String,
         ttl: u32,
     }, // 15
+    TXT {
+        domain: String,
+        text: String,
+        ttl: u32,
+    },
     AAAA {
         domain: String,
         addr: Ipv6Addr,
@@ -131,6 +136,22 @@ impl DnsRecord {
                     ttl: ttl,
                 })
             }
+            QueryType::TXT => {
+                let mut bytes = vec![];
+
+                for _ in 0..data_len {
+                    bytes.push(buffer.read()?);
+                }
+
+                let text = String::from_utf8(bytes)
+                    .map_err(|_| "Invalid UTF-8 in TXT")?;
+
+                Ok(DnsRecord::TXT {
+                    domain,
+                    text,
+                    ttl,
+                })
+            }
             QueryType::UNKNOWN(_) => {
                 buffer.step(data_len as usize)?;
 
@@ -223,6 +244,27 @@ impl DnsRecord {
 
                 let size = buffer.pos() - (pos + 2);
                 buffer.set_u16(pos, size as u16)?;
+            }
+            DnsRecord::TXT {
+                ref domain,
+                ref text,
+                ttl,
+            } => {
+                buffer.write_qname(domain)?;
+                buffer.write_u16(QueryType::TXT.to_num())?;
+                buffer.write_u16(1)?;
+                buffer.write_u32(ttl)?;
+
+                let text_bytes = text.as_bytes();
+
+                //RDLENGTH 1(length byte) + text length
+                buffer.write_u16((text_bytes.len() + 1) as u16)?;
+                //TXT length [len][data]
+                buffer.write_u8(text_bytes.len() as u8);  
+
+                for b in text_bytes {
+                    buffer.write_u8(*b)?;
+                }
             }
             DnsRecord::AAAA {
                 ref domain,

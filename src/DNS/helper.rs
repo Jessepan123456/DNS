@@ -23,6 +23,9 @@ pub fn print(rec: DnsRecord) {
         DnsRecord::AAAA { domain, addr, ttl } => {
             println!("{} -> {} (TTL: {})", domain, addr, ttl)
         }
+        DnsRecord::TXT { domain,text, ttl } => {
+            println!("{}, {}, (TTL: {})", domain, text, ttl)
+        }
         DnsRecord::UNKNOWN {
             domain,
             qtype,
@@ -110,5 +113,5 @@ pub fn user_input() -> String {
     io::stdin()
         .read_line(&mut input)
         .expect("Failed to get input");
-    return input;
+    return input.trim().to_string();
 }

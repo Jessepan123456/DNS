@@ -7,11 +7,12 @@
 /// MX: Where should email for this domain go? Use for Emails
 pub enum QueryType {
     UNKNOWN(u16),
-    A,      // 1
-    NS,     // 2
-    CNAME,  // 5
-    MX,     // 15
-    AAAA,   // 28
+    A,     // 1
+    NS,    // 2
+    CNAME, // 5
+    MX,    // 15
+    AAAA,  // 28
+    TXT,   // 16
 }
 
 impl QueryType {
@@ -23,6 +24,7 @@ impl QueryType {
             QueryType::NS => 2,
             QueryType::CNAME => 5,
             QueryType::MX => 15,
+            QueryType::TXT => 16,
             QueryType::AAAA => 28,
         }
     }
@@ -34,9 +36,9 @@ impl QueryType {
             2 => QueryType::NS,
             5 => QueryType::CNAME,
             15 => QueryType::MX,
+            16 => QueryType::TXT,
             28 => QueryType::AAAA,
             _ => QueryType::UNKNOWN(num),
         }
     }
 }
-
