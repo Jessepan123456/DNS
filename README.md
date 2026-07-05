@@ -19,9 +19,17 @@ A learning project for understanding the DNS Packets by reading and writing
 This project is based on "Building a DNS server in Rust" by EmillHernvall:
 https://github.com/EmilHernvall/dnsguide.git 
 
-## Addons
+## My Addition
+I implemented/improved:
+- Support for TXT DNS records
+- Additional packet validation
+- Command line interface
+- Cleaner and more readable output
+
+## Future Features
 - Support more DNS record types
 - Even better Packet Validation
 - Unit Test
 - Custom lookup
 - Adding a custom working Server
+
