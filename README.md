@@ -19,6 +19,8 @@ A learning project for understanding the DNS Packets by reading and writing
 This project is based on "Building a DNS server in Rust" by EmillHernvall:
 https://github.com/EmilHernvall/dnsguide.git 
 
+The original project is licensed under the MIT License
+
 ## My Addition
 I implemented/improved:
 - Support for TXT DNS records
